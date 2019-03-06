@@ -1,0 +1,56 @@
+version: 2
+
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.11
+    steps:
+      - checkout
+      - restore_cache: &restore_cache
+          name: Restore go modules cache
+          keys:
+            - go-mod-{{ checksum "go.sum" }}
+      - run: &go_mod_download
+          name: Download go modules to cache
+          command: go mod download
+      - save_cache: &save_cache
+          name: Save go modules cache
+          key: go-mod-{{ checksum "go.sum" }}
+          paths:
+            - /go/pkg/mod/cache
+      - run:
+          name: Unit Test
+          command: |
+            go test -v ./...
+      - run:
+          name: Acceptance Test
+          command: |
+            TF_ACC=1 go test -v ./...
+  release:
+    docker:
+      - image: circleci/golang:1.11
+    steps:
+      - checkout
+      - restore_cache: *restore_cache
+      - run: *go_mod_download
+      - save_cache: *save_cache
+      - deploy:
+          name: Release binaries to GitHub
+          command: |
+            curl -sL https://git.io/goreleaser | bash
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: /.*/
+      - release:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
