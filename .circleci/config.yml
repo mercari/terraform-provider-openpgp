@@ -3,7 +3,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
     steps:
       - checkout
       - restore_cache: &restore_cache
@@ -28,7 +28,7 @@ jobs:
             TF_ACC=1 go test -v ./...
   release:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
     steps:
       - checkout
       - restore_cache: *restore_cache
