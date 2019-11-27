@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccCreateKey(t *testing.T) {
@@ -16,7 +16,7 @@ func TestAccCreateKey(t *testing.T) {
 resource "openpgp_key" "test1" {
 }
 `,
-				ExpectError: regexp.MustCompile(`required field is not set`),
+				ExpectError: regexp.MustCompile(`config is invalid: 2 problems:`),
 			},
 			{
 				Config: `
@@ -24,7 +24,7 @@ resource "openpgp_key" "test2" {
   name = "Dragon3"
 }
 `,
-				ExpectError: regexp.MustCompile(`"email": required field is not set`),
+				ExpectError: regexp.MustCompile(`config is invalid: Missing required argument: The argument "email" is required, but no definition was found.`),
 			},
 			{
 				Config: `
@@ -32,7 +32,7 @@ resource "openpgp_key" "test3" {
   email = "dragon3@example.com"
 }
 `,
-				ExpectError: regexp.MustCompile(`"name": required field is not set`),
+				ExpectError: regexp.MustCompile(`config is invalid: Missing required argument: The argument "name" is required, but no definition was found.`),
 			},
 			{
 				Config: `

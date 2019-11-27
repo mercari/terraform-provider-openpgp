@@ -5,7 +5,7 @@ This provider creates a OpenPGP key pair so that you can use the key pair for ot
 ## Requirements
 
 - Terraform 0.11.x or higher
-- Go 1.11 or higher
+- Go 1.13 or higher (for build)
 
 ## Using the provider
 
