@@ -9,7 +9,7 @@ build: fmtcheck
 	go install
 
 test: fmtcheck
-	go test -i $(TEST) || exit 1
+	go test $(TEST) || exit 1
 	echo $(TEST) | \
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
@@ -30,8 +30,8 @@ lint:
 
 tools:
 	@echo "==> installing required tooling..."
-	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
-	GO111MODULE=off go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	go install github.com/client9/misspell/cmd/misspell@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
