@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccCreateKey(t *testing.T) {
@@ -16,7 +16,7 @@ func TestAccCreateKey(t *testing.T) {
 resource "openpgp_key" "test1" {
 }
 `,
-				ExpectError: regexp.MustCompile(`config is invalid: 2 problems:`),
+				ExpectError: regexp.MustCompile(`The argument "name" is required, but no definition was found.`),
 			},
 			{
 				Config: `
@@ -24,7 +24,7 @@ resource "openpgp_key" "test2" {
   name = "Dragon3"
 }
 `,
-				ExpectError: regexp.MustCompile(`config is invalid: Missing required argument: The argument "email" is required, but no definition was found.`),
+				ExpectError: regexp.MustCompile(`The argument "email" is required, but no definition was found.`),
 			},
 			{
 				Config: `
@@ -32,7 +32,7 @@ resource "openpgp_key" "test3" {
   email = "dragon3@example.com"
 }
 `,
-				ExpectError: regexp.MustCompile(`config is invalid: Missing required argument: The argument "name" is required, but no definition was found.`),
+				ExpectError: regexp.MustCompile(`The argument "name" is required, but no definition was found.`),
 			},
 			{
 				Config: `
@@ -42,10 +42,11 @@ resource "openpgp_key" "test4" {
 }
 
 output "private_key" {
-  value = "${openpgp_key.test4.private_key}"
+  value     = "${openpgp_key.test4.private_key}"
+  sensitive = true
 }
 output "public_key" {
-  value = "${openpgp_key.test4.public_key}"
+  value     = "${openpgp_key.test4.public_key}"
 }
 `,
 				Check: resource.ComposeTestCheckFunc(

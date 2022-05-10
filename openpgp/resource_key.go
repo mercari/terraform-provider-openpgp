@@ -7,8 +7,7 @@ import (
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/pkg/errors"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceKey() *schema.Resource {
@@ -57,23 +56,29 @@ func resourceKeyCreate(d *schema.ResourceData, m interface{}) error {
 		nil,                     // use sensible defaults intentionally
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to create new PGP key pair")
+		return fmt.Errorf("failed to create new PGP key pair: %w", err)
 	}
 
 	armorPrivateKey, err := armorEncodeKey(key, openpgp.PrivateKeyType)
 	if err != nil {
 		return err
 	}
-	d.Set("private_key", armorPrivateKey)
+	if err := d.Set("private_key", armorPrivateKey); err != nil {
+		return err
+	}
 
 	armorPublicKey, err := armorEncodeKey(key, openpgp.PublicKeyType)
 	if err != nil {
 		return err
 	}
-	d.Set("public_key", armorPublicKey)
+	if err := d.Set("public_key", armorPublicKey); err != nil {
+		return err
+	}
 
 	fingerprint := key.PrimaryKey.KeyIdString()
-	d.Set("fingerprint", fingerprint)
+	if err := d.Set("fingerprint", fingerprint); err != nil {
+		return err
+	}
 	d.SetId(fingerprint)
 
 	return resourceKeyRead(d, m)
@@ -92,23 +97,23 @@ func armorEncodeKey(key *openpgp.Entity, keyType string) (string, error) {
 	var b bytes.Buffer
 	w, err := armor.Encode(&b, keyType, make(map[string]string))
 	if err != nil {
-		return "", errors.Wrap(err, "failed to create armor encoder")
+		return "", fmt.Errorf("failed to create armor encoder: %w", err)
 	}
 
 	switch keyType {
 	case openpgp.PrivateKeyType:
 		if err := key.SerializePrivate(w, nil); err != nil {
-			return "", errors.Wrap(err, "failed to serialize private key")
+			return "", fmt.Errorf("failed to serialize private key: %w", err)
 		}
 	case openpgp.PublicKeyType:
 		if err := key.Serialize(w); err != nil {
-			return "", errors.Wrap(err, "failed to serialize public key")
+			return "", fmt.Errorf("failed to serialize public key: %w", err)
 		}
 	default:
 		return "", fmt.Errorf("unknown key type: %s", keyType)
 	}
 	if err := w.Close(); err != nil {
-		return "", errors.Wrap(err, "failed to close writer for armor")
+		return "", fmt.Errorf("failed to close writer for armor: %w", err)
 	}
 	return b.String(), nil
 }
